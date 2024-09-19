@@ -26,13 +26,13 @@ jobs:
 
       - name: Build
         run: |
-          GOARCH=${{ matrix.architecture }} go build -o myapp_${{ matrix.architecture }}.exe ./path/to/your/main.go
+          GOARCH=${{ matrix.architecture }} go build -o froop_${{ matrix.architecture }}.exe ./main.go
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v3
         with:
           name: windows-build
-          path: myapp_*.exe
+          path: froop_*.exe
 
   build-linux:
     name: Build on Linux
@@ -51,13 +51,13 @@ jobs:
 
       - name: Build
         run: |
-          GOARCH=${{ matrix.architecture }} go build -o myapp_${{ matrix.architecture }} ./path/to/your/main.go
+          GOARCH=${{ matrix.architecture }} go build -o froop_${{ matrix.architecture }} ./main.go
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v3
         with:
           name: linux-build
-          path: myapp_*
+          path: froop_*
 
   build-macos:
     name: Build on macOS
@@ -76,10 +76,10 @@ jobs:
 
       - name: Build
         run: |
-          GOARCH=${{ matrix.architecture }} go build -o myapp_${{ matrix.architecture }} ./path/to/your/main.go
+          GOARCH=${{ matrix.architecture }} go build -o froop_${{ matrix.architecture }} ./main.go
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v3
         with:
           name: macos-build
-          path: myapp_*
+          path: froop_*
