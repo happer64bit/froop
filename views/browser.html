@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directory of {{.Path}}</title>
+</head>
+<body>
+    <h1>Directory of {{.Path}}</h1>
+
+    <ul>
+        {{range .Files}}
+        <li>
+            <a href="{{.Link}}">{{.Name}}</a>
+        </li>
+        {{else}}
+        <li>No files found.</li>
+        {{end}}
+    </ul>
+</body>
+</html>
