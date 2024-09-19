@@ -1,0 +1,85 @@
+name: Go Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-windows:
+    name: Build on Windows
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        architecture: [amd64, 386]  # Specify the architectures: amd64 for 64-bit, 386 for 32-bit
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.23'
+
+      - name: Build
+        run: |
+          GOARCH=${{ matrix.architecture }} go build -o myapp_${{ matrix.architecture }}.exe ./path/to/your/main.go
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-build
+          path: myapp_*.exe
+
+  build-linux:
+    name: Build on Linux
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        architecture: [amd64, 386]  # Specify the architectures: amd64 for 64-bit, 386 for 32-bit
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.23'
+
+      - name: Build
+        run: |
+          GOARCH=${{ matrix.architecture }} go build -o myapp_${{ matrix.architecture }} ./path/to/your/main.go
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-build
+          path: myapp_*
+
+  build-macos:
+    name: Build on macOS
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        architecture: [amd64, arm64]  # Include arm64 for Apple Silicon
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.23'
+
+      - name: Build
+        run: |
+          GOARCH=${{ matrix.architecture }} go build -o myapp_${{ matrix.architecture }} ./path/to/your/main.go
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos-build
+          path: myapp_*
