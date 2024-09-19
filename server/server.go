@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	qrcodeTerminal "github.com/Baozisoftware/qrcode-terminal-go"
 )
@@ -35,14 +36,34 @@ func BasicAuthMiddleware(next http.Handler, username, password string) http.Hand
 	})
 }
 
+// GetExecutablePath returns the directory of the currently running executable
+func GetExecutablePath() (string, error) {
+	exePath, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Dir(exePath), nil
+}
+
 func StartServer(address, port, staticDir, authUsername, authPassword string, verbose bool) {
 	addr := fmt.Sprintf("%s:%s", address, port)
 
 	qr_obj := qrcodeTerminal.New()
-
 	qr_obj.Get("http://" + addr).Print()
 
-	tmpl, err := template.ParseFiles("./views/browser.html")
+	fmt.Printf("Starting server at http://%s\n", addr)
+
+	binaryDir, err := GetExecutablePath()
+	if err != nil {
+		fmt.Printf("Error getting executable path: %s\n", err)
+		return
+	}
+
+	// Build the path to the template
+	viewsPath := filepath.Join(binaryDir, "views", "browser.html")
+
+	// Parse the template using the absolute path
+	tmpl, err := template.ParseFiles(viewsPath)
 	if err != nil {
 		fmt.Printf("Error parsing template: %s\n", err)
 		return
@@ -50,8 +71,16 @@ func StartServer(address, port, staticDir, authUsername, authPassword string, ve
 
 	// Serve the directory listing or file content
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		// Clean the URL path and prepend the static directory
-		requestedPath := filepath.Join(staticDir, r.URL.Path)
+		// Sanitize and normalize the URL path
+		urlPath := strings.TrimPrefix(r.URL.Path, "/")
+		if urlPath == "" {
+			urlPath = "."
+		}
+
+		// Normalize URL path to use forward slashes and avoid encoding issues
+		urlPath = filepath.ToSlash(urlPath)
+		requestedPath := filepath.Join(staticDir, urlPath)
+
 		if verbose {
 			fmt.Printf("Requested path: %s\n", requestedPath)
 		}
@@ -104,7 +133,7 @@ func StartServer(address, port, staticDir, authUsername, authPassword string, ve
 			// Prepare the list of files for the template
 			var files []FileInfo
 			for _, fileName := range fileNames {
-				filePath := filepath.Join(r.URL.Path, fileName)
+				filePath := filepath.ToSlash(filepath.Join(urlPath, fileName))
 				if fileInfo, err := os.Stat(filepath.Join(requestedPath, fileName)); err == nil && fileInfo.IsDir() {
 					filePath += "/" // Append '/' for directories
 				}
@@ -114,13 +143,11 @@ func StartServer(address, port, staticDir, authUsername, authPassword string, ve
 				})
 			}
 
-			// Create the data to pass to the template
 			data := DirectoryData{
-				Path:  r.URL.Path,
+				Path:  urlPath,
 				Files: files,
 			}
 
-			// Render the template with the directory data
 			if verbose {
 				fmt.Printf("Rendering template with data: %+v\n", data)
 			}
@@ -143,10 +170,6 @@ func StartServer(address, port, staticDir, authUsername, authPassword string, ve
 		handler = BasicAuthMiddleware(handler, authUsername, authPassword)
 	}
 
-	// Log the server start and listen on the given address and port
-	if verbose {
-		fmt.Printf("Starting server at http://%s\n", addr)
-	}
 	if err := http.ListenAndServe(addr, handler); err != nil {
 		if verbose {
 			fmt.Printf("Error starting server: %s\n", err)
