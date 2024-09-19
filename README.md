@@ -2,7 +2,7 @@
 
 Froop is a project which aim is to share the file steamlessly and securely on the network event it's private or public.
 
-Froop is 54.43x times faster than `python.server`.
+Froop is 54.43x times faster than `python -m http.server`.
 
 ## Installation
 
