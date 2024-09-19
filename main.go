@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/akamensky/argparse"
 
@@ -23,6 +24,11 @@ func main() {
 		Default: "localhost",
 	})
 
+	auth := serveCmd.String("", "auth", &argparse.Options{
+		Help:     "Enable authentication with the format username:password",
+		Required: false,
+	})
+
 	err := parser.Parse(os.Args)
 	if err != nil {
 		fmt.Println(parser.Usage(err))
@@ -30,9 +36,22 @@ func main() {
 	}
 
 	if len(os.Args) < 2 || os.Args[1] != "serve" {
-		fmt.Println("Usage: <program> serve [--port=PORT] [--address=ADDRESS]")
+		fmt.Println("Usage: <program> serve [--port=PORT] [--address=ADDRESS] [--auth=username:password]")
 		os.Exit(1)
 	}
 
-	server.StartServer(*address, *port, ".")
+	var username, password string
+	if *auth != "" {
+		parts := strings.SplitN(*auth, ":", 2)
+		if len(parts) != 2 {
+			fmt.Println("Error: --auth should be in the format username:password.")
+			fmt.Println(parser.Usage(nil))
+			os.Exit(1)
+		}
+		username = parts[0]
+		password = parts[1]
+	}
+
+	// Start the server with or without authentication based on the presence of the --auth flag
+	server.StartServer(*address, *port, ".", username, password)
 }
