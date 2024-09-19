@@ -7,19 +7,22 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/mdp/qrterminal/v3"
+	qrcodeTerminal "github.com/Baozisoftware/qrcode-terminal-go"
 )
 
+// FileInfo holds the file information for the template
 type FileInfo struct {
 	Name string
 	Link string
 }
 
+// DirectoryData holds the path and the list of files for the template
 type DirectoryData struct {
 	Path  string
 	Files []FileInfo
 }
 
+// BasicAuthMiddleware is a middleware for Basic Authentication
 func BasicAuthMiddleware(next http.Handler, username, password string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user, pass, ok := r.BasicAuth()
@@ -32,17 +35,14 @@ func BasicAuthMiddleware(next http.Handler, username, password string) http.Hand
 	})
 }
 
-func StartServer(address, port, staticDir, authUsername, authPassword string) {
+func StartServer(address, port, staticDir, authUsername, authPassword string, verbose bool) {
 	addr := fmt.Sprintf("%s:%s", address, port)
 
+	qr_obj := qrcodeTerminal.New()
+
+	qr_obj.Get("http://" + addr).Print()
+
 	fmt.Printf("Generating QR code for: http://%s\n", addr)
-	qrterminal.GenerateWithConfig("http://"+addr, qrterminal.Config{
-		Level:     qrterminal.L,
-		Writer:    os.Stdout,
-		BlackChar: qrterminal.WHITE,
-		WhiteChar: qrterminal.BLACK,
-		QuietZone: 1,
-	})
 
 	tmpl, err := template.ParseFiles("./views/browser.html")
 	if err != nil {
@@ -50,17 +50,23 @@ func StartServer(address, port, staticDir, authUsername, authPassword string) {
 		return
 	}
 
+	// Serve the directory listing or file content
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// Clean the URL path and prepend the static directory
 		requestedPath := filepath.Join(staticDir, r.URL.Path)
-		fmt.Printf("Requested path: %s\n", requestedPath)
+		if verbose {
+			fmt.Printf("Requested path: %s\n", requestedPath)
+		}
 
+		// Check if requested path is a directory
 		fileInfo, err := os.Stat(requestedPath)
 		if err != nil {
 			if os.IsNotExist(err) {
 				http.Error(w, "File or directory not found", http.StatusNotFound)
 			} else {
-				fmt.Printf("Error stating path '%s': %s\n", requestedPath, err)
+				if verbose {
+					fmt.Printf("Error stating path '%s': %s\n", requestedPath, err)
+				}
 				http.Error(w, "Error accessing file or directory", http.StatusInternalServerError)
 			}
 			return
@@ -70,25 +76,34 @@ func StartServer(address, port, staticDir, authUsername, authPassword string) {
 			// Serve directory listing
 			dir, err := os.Open(requestedPath)
 			if err != nil {
-				fmt.Printf("Error opening directory '%s': %s\n", requestedPath, err)
+				if verbose {
+					fmt.Printf("Error opening directory '%s': %s\n", requestedPath, err)
+				}
 				http.Error(w, "Error opening directory", http.StatusInternalServerError)
 				return
 			}
 			defer func() {
 				if cerr := dir.Close(); cerr != nil {
-					fmt.Printf("Error closing directory '%s': %s\n", requestedPath, cerr)
+					if verbose {
+						fmt.Printf("Error closing directory '%s': %s\n", requestedPath, cerr)
+					}
 				}
 			}()
 
 			fileNames, err := dir.Readdirnames(0)
 			if err != nil {
-				fmt.Printf("Error reading directory '%s': %s\n", requestedPath, err)
+				if verbose {
+					fmt.Printf("Error reading directory '%s': %s\n", requestedPath, err)
+				}
 				http.Error(w, "Error reading directory", http.StatusInternalServerError)
 				return
 			}
 
-			fmt.Printf("Files found in directory '%s': %v\n", requestedPath, fileNames)
+			if verbose {
+				fmt.Printf("Files found in directory '%s': %v\n", requestedPath, fileNames)
+			}
 
+			// Prepare the list of files for the template
 			var files []FileInfo
 			for _, fileName := range fileNames {
 				filePath := filepath.Join(r.URL.Path, fileName)
@@ -101,30 +116,43 @@ func StartServer(address, port, staticDir, authUsername, authPassword string) {
 				})
 			}
 
+			// Create the data to pass to the template
 			data := DirectoryData{
 				Path:  r.URL.Path,
 				Files: files,
 			}
 
-			fmt.Printf("Rendering template with data: %+v\n", data)
+			// Render the template with the directory data
+			if verbose {
+				fmt.Printf("Rendering template with data: %+v\n", data)
+			}
 			err = tmpl.Execute(w, data)
 			if err != nil {
-				fmt.Printf("Error rendering template: %s\n", err)
+				if verbose {
+					fmt.Printf("Error rendering template: %s\n", err)
+				}
 				http.Error(w, "Error rendering template", http.StatusInternalServerError)
 			}
 		} else {
+			// Serve file content
 			http.ServeFile(w, r, requestedPath)
 		}
 	})
 
+	// Apply Basic Authentication middleware if credentials are provided
 	var handler http.Handler = http.DefaultServeMux
 	if authUsername != "" && authPassword != "" {
 		handler = BasicAuthMiddleware(handler, authUsername, authPassword)
 	}
 
-	fmt.Printf("Starting server at http://%s\n", addr)
+	// Log the server start and listen on the given address and port
+	if verbose {
+		fmt.Printf("Starting server at http://%s\n", addr)
+	}
 	if err := http.ListenAndServe(addr, handler); err != nil {
-		fmt.Printf("Error starting server: %s\n", err)
+		if verbose {
+			fmt.Printf("Error starting server: %s\n", err)
+		}
 		os.Exit(1)
 	}
 }

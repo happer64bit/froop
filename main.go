@@ -29,6 +29,10 @@ func main() {
 		Required: false,
 	})
 
+	verbose := serveCmd.Flag("v", "verbose", &argparse.Options{
+		Help: "Enable verbose logging",
+	})
+
 	err := parser.Parse(os.Args)
 	if err != nil {
 		fmt.Println(parser.Usage(err))
@@ -36,7 +40,7 @@ func main() {
 	}
 
 	if len(os.Args) < 2 || os.Args[1] != "serve" {
-		fmt.Println("Usage: <program> serve [--port=PORT] [--address=ADDRESS] [--auth=username:password]")
+		fmt.Println("Usage: <program> serve [--port=PORT] [--address=ADDRESS] [--auth=username:password] [--verbose]")
 		os.Exit(1)
 	}
 
@@ -53,5 +57,5 @@ func main() {
 	}
 
 	// Start the server with or without authentication based on the presence of the --auth flag
-	server.StartServer(*address, *port, ".", username, password)
+	server.StartServer(*address, *port, ".", username, password, *verbose)
 }
