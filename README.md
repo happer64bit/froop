@@ -38,10 +38,10 @@ For Windows, you may need to declare or add a system environment variable with t
 > [!INFO]
 > These benchmarking result are tested by a tool called `oha`.
 
-|  | Froop | python.server |
+|  | Froop | http.server |
 |---|---|---|
-| Total | 22.7559s |1238.5834 secs|
-| Fastest | 0.0121s | 0.0009s |
+| Total | 22.7559s |1238.5834s |
+| Fastest | 00009s | .0121s |
 | Success Rate | 100.00% | 98.28% |
 
 ## Dontation
