@@ -42,8 +42,6 @@ func StartServer(address, port, staticDir, authUsername, authPassword string, ve
 
 	qr_obj.Get("http://" + addr).Print()
 
-	fmt.Printf("Generating QR code for: http://%s\n", addr)
-
 	tmpl, err := template.ParseFiles("./views/browser.html")
 	if err != nil {
 		fmt.Printf("Error parsing template: %s\n", err)
