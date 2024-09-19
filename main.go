@@ -7,7 +7,7 @@ import (
 
 	"github.com/akamensky/argparse"
 
-	"froop/server"
+	"github.com/happer64bit/froop/server"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-module froop
+module github.com/happer64bit/froop
 
 go 1.23.0
 
