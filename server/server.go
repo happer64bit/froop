@@ -1,6 +1,7 @@
 package server
 
 import (
+	_ "embed"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -22,6 +23,9 @@ type DirectoryData struct {
 	Path  string
 	Files []FileInfo
 }
+
+//go:embed views/browser.html
+var browserTemplate string
 
 // BasicAuthMiddleware is a middleware for Basic Authentication
 func BasicAuthMiddleware(next http.Handler, username, password string) http.Handler {
@@ -53,19 +57,10 @@ func StartServer(address, port, staticDir, authUsername, authPassword string, ve
 
 	fmt.Printf("Starting server at http://%s\n", addr)
 
-	binaryDir, err := GetExecutablePath()
+	// Parse the embedded browser.html template
+	tmpl, err := template.New("browser").Parse(browserTemplate)
 	if err != nil {
-		fmt.Printf("Error getting executable path: %s\n", err)
-		return
-	}
-
-	// Build the path to the template
-	viewsPath := filepath.Join(binaryDir, "views", "browser.html")
-
-	// Parse the template using the absolute path
-	tmpl, err := template.ParseFiles(viewsPath)
-	if err != nil {
-		fmt.Printf("Error parsing template: %s\n", err)
+		fmt.Printf("Error parsing embedded template: %s\n", err)
 		return
 	}
 
