@@ -4,6 +4,20 @@ Froop is a project which aim is to share the file steamlessly and securely on th
 
 Froop is 54.43x times faster than `python -m http.server`.
 
+## Usage
+
+### Start Server
+
+```
+froop serve -a <ADDRESS> -p <port>
+```
+
+#### With Auth
+
+```
+froop serve -a <ADDRESS> -p <port> --auth username:password
+```
+
 ## Installation
 
 ### Via Golang Package Manager (Recommended)
