@@ -6,6 +6,12 @@ Froop is 54.43x times faster than `python -m http.server`.
 
 ## Installation
 
+### Via Golang Package Manager (Recommended)
+
+```sh
+go install github.com/happer64bit/froop
+```
+
 ### Building from source
 
 - golang (https://go.dev/)
@@ -18,10 +24,6 @@ cd froop
 go build
 ```
 
-```sh
-go install github.com/happer64bit/froop
-```
-
 ### Adding to PATH (Linux)
 
 ```
@@ -31,7 +33,6 @@ sudo cp froop /usr/bin
 ### Adding to PATH (Windows)
 
 For Windows, you may need to declare or add a system environment variable with the path of the executable
-
 
 ## Benchmarking
 
