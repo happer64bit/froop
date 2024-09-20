@@ -50,7 +50,7 @@ For Windows, you may need to declare or add a system environment variable with t
 
 ## Benchmarking
 
-> [!INFO]
+> [!NOTE]
 > These benchmarking result are tested by a tool called `oha`.
 
 |  | Froop | http.server |
