@@ -4,11 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Directory of {{.Path}}</title>
+    <style>
+        #search {
+            margin-bottom: 20px;
+        }
+    </style>
+    <script>
+        function searchFiles() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const listItems = document.querySelectorAll('#fileList li');
+
+            listItems.forEach(item => {
+                const fileName = item.textContent.toLowerCase();
+                if (fileName.includes(input)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script>
 </head>
 <body>
     <h1>Directory of {{.Path}}</h1>
 
-    <ul>
+    <input type="text" id="searchInput" onkeyup="searchFiles()" placeholder="Search for files..." />
+    
+    <ul id="fileList">
         {{range .Files}}
         <li>
             <a href="/{{.Link}}">{{.Name}}</a>
