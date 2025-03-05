@@ -12,7 +12,7 @@ import (
 
 func main() {
 	// Create a new parser object
-	parser := argparse.NewParser("myserver", "A simple HTTP server")
+	parser := argparse.NewParser("froop", "A Froop Http Cli")
 
 	// Create the 'serve' command
 	serveCmd := parser.NewCommand("serve", "Start the HTTP server")
@@ -64,6 +64,5 @@ func main() {
 		password = parts[1]
 	}
 
-	// Start the server with or without authentication based on the presence of the --auth flag
 	server.StartServer(*address, *port, ".", username, password, *verbose)
 }
