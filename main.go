@@ -7,8 +7,38 @@ import (
 
 	"github.com/akamensky/argparse"
 
+	"net"
+
 	"github.com/happer64bit/froop/server"
 )
+
+func smart_replace_address(address string) string {
+	// If address is "localhost", treat it as empty to auto-detect LAN IP
+	if address == "" || address == "localhost" {
+		addrs, err := net.InterfaceAddrs()
+		if err == nil {
+			var lanIP string
+			for _, addr := range addrs {
+				if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() && ipnet.IP.To4() != nil {
+					ip := ipnet.IP
+					// Prefer LAN (private) addresses
+					if ip.IsPrivate() {
+						return ip.String()
+					}
+					// Fallback to first non-loopback IPv4 if no private found
+					if lanIP == "" {
+						lanIP = ip.String()
+					}
+				}
+			}
+			if lanIP != "" {
+				return lanIP
+			}
+		}
+		return "127.0.0.1"
+	}
+	return address
+}
 
 func main() {
 	// Create a new parser object
@@ -16,15 +46,17 @@ func main() {
 
 	// Create the 'serve' command
 	serveCmd := parser.NewCommand("serve", "Start the HTTP server")
-
+	
 	// Add command-line options for port and address
 	port := serveCmd.String("p", "port", &argparse.Options{
 		Help:    "Port to run the server on",
 		Default: "8080",
 	})
+
 	address := serveCmd.String("a", "address", &argparse.Options{
 		Help:    "Address to bind the server to",
 		Default: "localhost",
+		Required: false,
 	})
 
 	// Add an optional authentication flag
@@ -64,5 +96,7 @@ func main() {
 		password = parts[1]
 	}
 
-	server.StartServer(*address, *port, ".", username, password, *verbose)
+	smart_address := smart_replace_address(*address)
+
+	server.StartServer(smart_address, *port, ".", username, password, *verbose)
 }
