@@ -30,7 +30,7 @@ jobs:
           go build -o froop_${{ matrix.architecture }}.exe ./main.go
 
       - name: Upload Windows artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: windows-build
           path: froop_*.exe

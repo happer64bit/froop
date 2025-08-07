@@ -5,8 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Directory of {{.Path}}</title>
     <style>
-        #search {
-            margin-bottom: 20px;
+        html, body {
+            padding: 0;
+            margin: 0;
+            font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif
+        }
+
+        #searchInput {
+            padding: 6px 12px;
         }
     </style>
     <script>
@@ -26,18 +32,22 @@
     </script>
 </head>
 <body>
-    <h1>Directory of {{.Path}}</h1>
+    <div style="background-color: lightblue; padding: 1px 12px; margin-bottom: 12px;">
+        <p style="font-size: large;">Directory of {{.Path}}</p>
+    </div>
 
-    <input type="text" id="searchInput" onkeyup="searchFiles()" placeholder="Search for files..." />
-    
-    <ul id="fileList">
-        {{range .Files}}
-        <li>
-            <a href="/{{.Link}}">{{.Name}}</a>
-        </li>
-        {{else}}
-        <li>No files found.</li>
-        {{end}}
-    </ul>
+    <div style="padding: 12px;">
+        <input type="text" id="searchInput" onkeyup="searchFiles()" placeholder="Search for files..." />
+        
+        <ul id="fileList">
+            {{range .Files}}
+            <li>
+                <a href="/{{.Link}}">{{.Name}}</a>
+            </li>
+            {{else}}
+            <li>No files found.</li>
+            {{end}}
+        </ul>
+    </div>
 </body>
 </html>

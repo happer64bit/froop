@@ -55,7 +55,6 @@ func main() {
 
 	address := serveCmd.String("a", "address", &argparse.Options{
 		Help:    "Address to bind the server to",
-		Default: "localhost",
 		Required: false,
 	})
 
